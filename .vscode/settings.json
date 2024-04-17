@@ -1,6 +1,11 @@
 {
   "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "editor.linkedEditing": true,
+  "editor.codeActionsOnSave": {
+    "source.organizeImports": "explicit"
+  },
   "files.associations": {
     "*.css": "tailwindcss"
-  }
+  },
+  "cSpell.words": ["uniqid", "rodos"]
 }

@@ -1,0 +1,28 @@
+<aside class="h-full p-3">
+  <mat-toolbar
+    color="primary"
+    class="!h-full rounded-md shadow-sm shadow-black"
+  >
+    @if (activeElement(); as activeElement) {
+      <ng-container>
+        <mat-toolbar-row>
+          <h2>{{ activeElement.type }}</h2>
+        </mat-toolbar-row>
+
+        <mat-toolbar-row>
+          <mat-form-field class="w-full">
+            <mat-label>X position</mat-label>
+            <input matInput type="number" />
+          </mat-form-field>
+        </mat-toolbar-row>
+
+        <mat-toolbar-row>
+          <mat-form-field class="w-full">
+            <mat-label>Y position</mat-label>
+            <input matInput type="number" />
+          </mat-form-field>
+        </mat-toolbar-row>
+      </ng-container>
+    }
+  </mat-toolbar>
+</aside>

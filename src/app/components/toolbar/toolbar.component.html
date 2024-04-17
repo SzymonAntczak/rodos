@@ -1,0 +1,30 @@
+<aside class="h-full p-3">
+  <mat-toolbar color="primary" class="h-full rounded-md shadow-sm shadow-black">
+    <mat-toolbar-row class="mb-5 justify-center">
+      <h1 class="text-center !text-lg font-medium uppercase text-white">
+        {{ title }}
+      </h1>
+    </mat-toolbar-row>
+
+    @for (item of menuItems; track item.category) {
+      <mat-toolbar-row [matMenuTriggerFor]="menu" class="justify-center">
+        <button mat-icon-button [disableRipple]="true">
+          <mat-icon class="scale-[2.5]">{{ item.icon }}</mat-icon>
+        </button>
+
+        <mat-menu #menu="matMenu" yPosition="below" xPosition="after">
+          @for (boardElement of item.boardElements; track boardElement.label) {
+            <button
+              mat-menu-item
+              (click)="
+                boardElementsService.addElement(boardElement.componentType)
+              "
+            >
+              {{ boardElement.label }}
+            </button>
+          }
+        </mat-menu>
+      </mat-toolbar-row>
+    }
+  </mat-toolbar>
+</aside>

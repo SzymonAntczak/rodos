@@ -1,0 +1,16 @@
+<div class="h-full p-3">
+  <div class="flex h-full items-center justify-center">
+    <div id="board-container" class="aspect-square w-full max-w-[800px] border">
+      @for (element of boardElementsService.elements(); track element.id) {
+        <app-board-element
+          [id]="element.id"
+          [options]="element.options"
+          [style.outline]="element.isActive ? 'auto' : 'none'"
+          class="inline-block"
+        >
+          <ng-container *ngComponentOutlet="element.component" />
+        </app-board-element>
+      }
+    </div>
+  </div>
+</div>
