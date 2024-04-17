@@ -12,14 +12,24 @@
         <mat-toolbar-row>
           <mat-form-field class="w-full">
             <mat-label>X position</mat-label>
-            <input matInput type="number" />
+            <input
+              matInput
+              type="number"
+              name="xPosition"
+              (input)="onChange($event)"
+            />
           </mat-form-field>
         </mat-toolbar-row>
 
         <mat-toolbar-row>
           <mat-form-field class="w-full">
             <mat-label>Y position</mat-label>
-            <input matInput type="number" />
+            <input
+              matInput
+              type="number"
+              name="yPosition"
+              (change)="onChange($event)"
+            />
           </mat-form-field>
         </mat-toolbar-row>
       </ng-container>

@@ -5,7 +5,7 @@ import { type GrassComponent } from '../components/board/board-elements/subsoil/
 import type { DTO } from './http.service';
 import { CollectionName, HttpService } from './http.service';
 
-export type BoardElementDTO = DTO & {
+type BoardElementDTO = DTO & {
   type: 'grass' | 'concreteSlab';
   options: {
     xPosition: number;
@@ -38,6 +38,7 @@ export const boardComponents = {
 })
 export class BoardElementsService {
   readonly elements = signal<BoardElement[]>([]);
+
   private readonly httpService = inject(HttpService);
 
   constructor() {
@@ -45,9 +46,14 @@ export class BoardElementsService {
       .getItems<BoardElementDTO>(CollectionName.BoardElements)
       .pipe(take(1))
       .subscribe((boardElementsDTO) => {
-        boardElementsDTO.map((boardElementDTO) =>
-          this.updateElements(boardElementDTO),
-        );
+        boardElementsDTO.forEach(async ({ type, id, options }) => {
+          const component: BoardComponent = await boardComponents[type]();
+
+          this.elements.update((elements) => [
+            ...elements,
+            { id, type, options, component },
+          ]);
+        });
       });
   }
 
@@ -55,40 +61,47 @@ export class BoardElementsService {
     this.httpService
       .post<BoardElementDTO>(CollectionName.BoardElements, {
         type: componentType,
-        options: { xPosition: 0.5, yPosition: 0.5 },
+        options: { xPosition: 0, yPosition: 0 },
       })
       .pipe(take(1))
-      .subscribe((boardElementDTO) =>
-        this.updateElements(boardElementDTO, true),
-      );
+      .subscribe(async ({ type, id, options }) => {
+        const component: BoardComponent = await boardComponents[type]();
+
+        this.elements.update((elements) => {
+          elements.forEach((element) => {
+            element.isActive = false;
+          });
+
+          return [
+            ...elements,
+            { id, type, options, component, isActive: true },
+          ];
+        });
+      });
   }
 
-  toggleActiveElement(id: BoardElementDTO['id']): void {
-    this.elements.update((elements) => {
-      return elements.map((element) => {
+  toggleActiveElement(id: BoardElement['id']): void {
+    this.elements.update((elements) =>
+      elements.map((element) => {
         element.isActive = element.id === id ? !element.isActive : false;
         return element;
-      });
-    });
+      }),
+    );
   }
 
-  private async updateElements(
-    { id, type, options }: BoardElementDTO,
-    setNewElementAsActive?: boolean,
-  ): Promise<void> {
-    const component: BoardComponent = await boardComponents[type]();
+  updateElementOptions(
+    id: BoardElement['id'],
+    options: Partial<BoardElement['options']>,
+  ): void {
+    this.elements.update((elements) =>
+      elements.map((element) => {
+        element.options =
+          element.id === id
+            ? { ...element.options, ...options }
+            : element.options;
 
-    this.elements.update((elements) => {
-      if (setNewElementAsActive) {
-        elements.forEach((element) => {
-          element.isActive = false;
-        });
-      }
-
-      return [
-        ...elements,
-        { id, type, options, component, isActive: setNewElementAsActive },
-      ];
-    });
+        return element;
+      }),
+    );
   }
 }

@@ -1,5 +1,5 @@
 import { Component, Input, inject } from '@angular/core';
-import type { BoardElementDTO } from '../../../services/board-elements.service';
+import type { BoardElement } from '../../../services/board-elements.service';
 import { BoardElementsService } from '../../../services/board-elements.service';
 
 @Component({
@@ -10,6 +10,6 @@ import { BoardElementsService } from '../../../services/board-elements.service';
 export class BoardElementComponent {
   readonly boardElementsService = inject(BoardElementsService);
 
-  @Input({ required: true }) id!: BoardElementDTO['id'];
-  @Input({ required: true }) options!: BoardElementDTO['options'];
+  @Input({ required: true }) id!: BoardElement['id'];
+  @Input({ required: true }) options!: BoardElement['options'];
 }
