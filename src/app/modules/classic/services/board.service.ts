@@ -5,9 +5,7 @@ export type BoardSize = {
   height: number;
 };
 
-@Injectable({
-  providedIn: 'root',
-})
+@Injectable()
 export class BoardService {
   readonly size = signal<BoardSize>({
     width: 17.5,

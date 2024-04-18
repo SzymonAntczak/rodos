@@ -26,7 +26,6 @@ export class BoardElementToolbarComponent {
     if (!activeElement) return;
 
     const { name, value, type } = event.target as HTMLInputElement;
-    console.log(value);
 
     this.boardElementsService.updateElementOptions(activeElement.id, {
       [name]: type === 'number' ? Number(value) : value,
