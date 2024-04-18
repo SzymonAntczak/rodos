@@ -1,6 +1,6 @@
 import { Component, Input, inject } from '@angular/core';
-import type { BoardElement } from '../../../services/board-elements.service';
-import { BoardElementsService } from '../../../services/board-elements.service';
+import type { BoardElement } from '../../../../shared/services/board-elements.service';
+import { BoardElementsService } from '../../../../shared/services/board-elements.service';
 
 @Component({
   selector: 'app-board-element',

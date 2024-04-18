@@ -12,7 +12,7 @@ import {
 import {
   BoardElementsService,
   type BoardElement,
-} from '../../services/board-elements.service';
+} from '../../../shared/services/board-elements.service';
 import { BoardService } from '../../services/board.service';
 import { BoardElementComponent } from './board-elements/board-element.component';
 

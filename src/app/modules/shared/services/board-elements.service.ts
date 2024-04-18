@@ -1,9 +1,8 @@
 import { Injectable, inject, signal } from '@angular/core';
 import { take } from 'rxjs';
-import type { ConcreteSlabComponent } from '../components/board/board-elements/subsoil/concrete-slab/concrete-slab.component';
-import { type GrassComponent } from '../components/board/board-elements/subsoil/grass/grass.component';
-import type { DTO } from './http.service';
-import { CollectionName, HttpService } from './http.service';
+import type { ConcreteSlabComponent } from '../../classic/components/board/board-elements/subsoil/concrete-slab/concrete-slab.component';
+import { type GrassComponent } from '../../classic/components/board/board-elements/subsoil/grass/grass.component';
+import { CollectionName, StorageService, type DTO } from './storage.service';
 
 type BoardElementDTO = DTO & {
   type: 'grass' | 'concreteSlab';
@@ -28,11 +27,11 @@ export type BoardComponent =
 export const boardComponents = {
   grass: () =>
     import(
-      '../components/board/board-elements/subsoil/grass/grass.component'
+      '../../classic/components/board/board-elements/subsoil/grass/grass.component'
     ).then((m) => m.GrassComponent),
   concreteSlab: () =>
     import(
-      '../components/board/board-elements/subsoil/concrete-slab/concrete-slab.component'
+      '../../classic/components/board/board-elements/subsoil/concrete-slab/concrete-slab.component'
     ).then((m) => m.ConcreteSlabComponent),
 } satisfies Record<BoardElementDTO['type'], () => Promise<BoardComponent>>;
 
@@ -42,10 +41,10 @@ export const boardComponents = {
 export class BoardElementsService {
   readonly elements = signal<BoardElement[]>([]);
 
-  private readonly httpService = inject(HttpService);
+  private readonly storageService = inject(StorageService);
 
   constructor() {
-    this.httpService
+    this.storageService
       .getItems<BoardElementDTO>(CollectionName.BoardElements)
       .pipe(take(1))
       .subscribe((boardElementsDTO) => {
@@ -61,8 +60,8 @@ export class BoardElementsService {
   }
 
   addElement(componentType: keyof typeof boardComponents): void {
-    this.httpService
-      .post<BoardElementDTO>(CollectionName.BoardElements, {
+    this.storageService
+      .createItem<BoardElementDTO>(CollectionName.BoardElements, {
         type: componentType,
         options: {
           xPosition: 0,

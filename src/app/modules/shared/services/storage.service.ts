@@ -14,7 +14,7 @@ export interface DTO {
 @Injectable({
   providedIn: 'root',
 })
-export class HttpService {
+export class StorageService {
   getItems<T extends DTO>(collectionName: CollectionName): Observable<T[]> {
     const collectionRaw = localStorage.getItem(collectionName);
     const collection: T[] = collectionRaw ? JSON.parse(collectionRaw) : [];
@@ -31,7 +31,7 @@ export class HttpService {
     );
   }
 
-  post<T extends DTO>(
+  createItem<T extends DTO>(
     collectionName: CollectionName,
     body: Omit<T, 'id'>,
   ): Observable<T> {
@@ -51,7 +51,7 @@ export class HttpService {
     );
   }
 
-  patch<T extends DTO>(
+  updateItem<T extends DTO>(
     collectionName: CollectionName,
     id: DTO['id'],
     body: Partial<Omit<T, 'id'>>,
@@ -74,7 +74,7 @@ export class HttpService {
     );
   }
 
-  delete<T extends DTO>(
+  deleteItem<T extends DTO>(
     collectionName: CollectionName,
     id: DTO['id'],
   ): Observable<T[]> {

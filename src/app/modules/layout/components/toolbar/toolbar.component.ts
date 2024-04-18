@@ -3,8 +3,10 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatToolbarModule } from '@angular/material/toolbar';
-import type { boardComponents } from '../../services/board-elements.service';
-import { BoardElementsService } from '../../services/board-elements.service';
+import {
+  BoardElementsService,
+  type boardComponents,
+} from '../../../shared/services/board-elements.service';
 
 interface MenuItem {
   category: 'subsoil';

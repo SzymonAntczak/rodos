@@ -1,5 +1,7 @@
-<main class="grid h-screen grid-cols-[7rem_1fr_25rem]">
+<main class="grid h-screen grid-cols-[7rem_1fr] gap-3 p-3">
   <app-toolbar />
-  <app-board />
-  <app-board-element-toolbar />
+
+  <section>
+    <router-outlet />
+  </section>
 </main>
