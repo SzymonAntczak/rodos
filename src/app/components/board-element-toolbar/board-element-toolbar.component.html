@@ -1,7 +1,7 @@
 <aside class="h-full p-3">
   <mat-toolbar
     color="primary"
-    class="!h-full rounded-md shadow-sm shadow-black"
+    class="!h-full gap-y-2 rounded-md shadow-sm shadow-black"
   >
     @if (activeElement(); as activeElement) {
       <ng-container>
@@ -9,30 +9,98 @@
           <h2>{{ activeElement.type }}</h2>
         </mat-toolbar-row>
 
-        <mat-toolbar-row>
-          <mat-form-field class="w-full">
-            <mat-label>X position</mat-label>
-            <input
-              matInput
-              type="number"
-              name="xPosition"
-              (input)="onChange($event)"
-            />
-          </mat-form-field>
-        </mat-toolbar-row>
+        <ng-container
+          *ngTemplateOutlet="
+            inputRow;
+            context: {
+              $implicit: {
+                label: 'Odległość od lewej krawędzi obszaru',
+                name: 'xPosition',
+                value: activeElement.options.xPosition,
+                max: boardService.size().width
+              }
+            }
+          "
+        />
 
-        <mat-toolbar-row>
-          <mat-form-field class="w-full">
-            <mat-label>Y position</mat-label>
-            <input
-              matInput
-              type="number"
-              name="yPosition"
-              (change)="onChange($event)"
-            />
-          </mat-form-field>
-        </mat-toolbar-row>
+        <ng-container
+          *ngTemplateOutlet="
+            inputRow;
+            context: {
+              $implicit: {
+                label: 'Odległość od dolnej krawędzi obszaru',
+                name: 'yPosition',
+                value: activeElement.options.yPosition,
+                max: boardService.size().height
+              }
+            }
+          "
+        />
+
+        <ng-container
+          *ngTemplateOutlet="
+            inputRow;
+            context: {
+              $implicit: {
+                label: 'Szerokość',
+                name: 'width',
+                value: activeElement.options.width,
+                max: boardService.size().width
+              }
+            }
+          "
+        />
+
+        <ng-container
+          *ngTemplateOutlet="
+            inputRow;
+            context: {
+              $implicit: {
+                label: 'Wysokość',
+                name: 'height',
+                value: activeElement.options.height,
+                max: boardService.size().height
+              }
+            }
+          "
+        />
+
+        <ng-container
+          *ngTemplateOutlet="
+            inputRow;
+            context: {
+              $implicit: {
+                label: 'Warstwa',
+                name: 'layer',
+                value: activeElement.options.layer,
+                max: 10,
+                step: '1'
+              }
+            }
+          "
+        />
       </ng-container>
     }
   </mat-toolbar>
 </aside>
+
+<ng-template #inputRow let-input>
+  <mat-toolbar-row class="!h-auto">
+    <mat-form-field class="w-full">
+      <mat-label>{{ input.label }}</mat-label>
+
+      <input
+        matInput
+        type="number"
+        min="0"
+        [name]="input.name"
+        [value]="input.value"
+        [max]="input.max"
+        [step]="input.step ?? '0.1'"
+        (change)="onChange($event)"
+      />
+
+      <mat-hint align="start">{{ input.hint ?? "W metrach" }}</mat-hint>
+    </mat-form-field>
+  </mat-toolbar-row>
+</ng-template>

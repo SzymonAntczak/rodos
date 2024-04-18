@@ -10,6 +10,9 @@ type BoardElementDTO = DTO & {
   options: {
     xPosition: number;
     yPosition: number;
+    width: number;
+    height: number;
+    layer: number;
   };
 };
 
@@ -61,7 +64,13 @@ export class BoardElementsService {
     this.httpService
       .post<BoardElementDTO>(CollectionName.BoardElements, {
         type: componentType,
-        options: { xPosition: 0, yPosition: 0 },
+        options: {
+          xPosition: 0,
+          yPosition: 0,
+          width: 1,
+          height: 1,
+          layer: 0,
+        },
       })
       .pipe(take(1))
       .subscribe(async ({ type, id, options }) => {
