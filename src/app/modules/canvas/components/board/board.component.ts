@@ -33,13 +33,19 @@ export class BoardComponent implements OnInit {
   private renderer?: THREE.WebGLRenderer;
 
   @ViewChild('boardContainer', { static: true })
-  boardContainer!: ElementRef<HTMLDivElement>;
+  boardContainer?: ElementRef<HTMLDivElement>;
 
-  @ViewChild('canvas', { static: true }) canvas!: ElementRef<HTMLCanvasElement>;
+  @ViewChild('canvas', { static: true }) canvas?: ElementRef<HTMLCanvasElement>;
 
   @HostListener('window:resize', ['$event'])
   onResize() {
-    if (!this.canvasSize || !this.camera || !this.renderer) return;
+    if (
+      !this.canvasSize ||
+      !this.camera ||
+      !this.renderer ||
+      !this.boardContainer
+    )
+      return;
 
     this.canvasSize.width = this.boardContainer.nativeElement.offsetWidth;
     this.canvasSize.height = this.boardContainer.nativeElement.offsetHeight;
@@ -52,6 +58,8 @@ export class BoardComponent implements OnInit {
   }
 
   ngOnInit() {
+    if (!this.boardContainer || !this.canvas) return;
+
     this.canvasSize = {
       width: this.boardContainer.nativeElement.offsetWidth,
       height: this.boardContainer.nativeElement.offsetHeight,

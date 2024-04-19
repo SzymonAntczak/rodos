@@ -1,10 +1,8 @@
 import { Injectable, inject, signal } from '@angular/core';
 import { take } from 'rxjs';
-import type { ConcreteSlabComponent } from '../../classic/components/board/board-elements/subsoil/concrete-slab/concrete-slab.component';
-import { type GrassComponent } from '../../classic/components/board/board-elements/subsoil/grass/grass.component';
 import { CollectionName, StorageService, type DTO } from './storage.service';
 
-type BoardElementDTO = DTO & {
+export type BoardElementDTO = DTO & {
   type: 'grass' | 'concreteSlab';
   options: {
     xPosition: number;
@@ -15,31 +13,11 @@ type BoardElementDTO = DTO & {
   };
 };
 
-export type BoardElement = BoardElementDTO & {
-  component: BoardComponent;
-  isActive?: boolean;
-};
-
-export type BoardComponent =
-  | typeof GrassComponent
-  | typeof ConcreteSlabComponent;
-
-export const boardComponents = {
-  grass: () =>
-    import(
-      '../../classic/components/board/board-elements/subsoil/grass/grass.component'
-    ).then((m) => m.GrassComponent),
-  concreteSlab: () =>
-    import(
-      '../../classic/components/board/board-elements/subsoil/concrete-slab/concrete-slab.component'
-    ).then((m) => m.ConcreteSlabComponent),
-} satisfies Record<BoardElementDTO['type'], () => Promise<BoardComponent>>;
-
 @Injectable({
   providedIn: 'root',
 })
 export class BoardElementsService {
-  readonly elements = signal<BoardElement[]>([]);
+  readonly elements = signal<(BoardElementDTO & { isActive?: boolean })[]>([]);
 
   private readonly storageService = inject(StorageService);
 
@@ -48,18 +26,11 @@ export class BoardElementsService {
       .getItems<BoardElementDTO>(CollectionName.BoardElements)
       .pipe(take(1))
       .subscribe((boardElementsDTO) => {
-        boardElementsDTO.forEach(async ({ type, id, options }) => {
-          const component: BoardComponent = await boardComponents[type]();
-
-          this.elements.update((elements) => [
-            ...elements,
-            { id, type, options, component },
-          ]);
-        });
+        this.elements.set(boardElementsDTO);
       });
   }
 
-  addElement(componentType: keyof typeof boardComponents): void {
+  addElement(componentType: BoardElementDTO['type']): void {
     this.storageService
       .createItem<BoardElementDTO>(CollectionName.BoardElements, {
         type: componentType,
@@ -72,23 +43,12 @@ export class BoardElementsService {
         },
       })
       .pipe(take(1))
-      .subscribe(async ({ type, id, options }) => {
-        const component: BoardComponent = await boardComponents[type]();
-
-        this.elements.update((elements) => {
-          elements.forEach((element) => {
-            element.isActive = false;
-          });
-
-          return [
-            ...elements,
-            { id, type, options, component, isActive: true },
-          ];
-        });
+      .subscribe((boardElementDTO) => {
+        this.elements.update((elements) => [...elements, boardElementDTO]);
       });
   }
 
-  toggleActiveElement(id: BoardElement['id']): void {
+  toggleActiveElement(id: BoardElementDTO['id']): void {
     this.elements.update((elements) =>
       elements.map((element) => {
         element.isActive = element.id === id ? !element.isActive : false;
@@ -98,8 +58,8 @@ export class BoardElementsService {
   }
 
   updateElementOptions(
-    id: BoardElement['id'],
-    options: Partial<BoardElement['options']>,
+    id: BoardElementDTO['id'],
+    options: Partial<BoardElementDTO['options']>,
   ): void {
     this.elements.update((elements) =>
       elements.map((element) => {

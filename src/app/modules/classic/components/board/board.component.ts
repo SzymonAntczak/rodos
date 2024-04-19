@@ -3,18 +3,33 @@ import {
   Component,
   HostListener,
   ViewChild,
-  computed,
+  effect,
   inject,
   signal,
   type AfterViewInit,
-  type ElementRef,
+  type ElementRef
 } from '@angular/core';
 import {
   BoardElementsService,
-  type BoardElement,
+  type BoardElementDTO,
 } from '../../../shared/services/board-elements.service';
-import { BoardService } from '../../services/board.service';
-import { BoardElementComponent } from './board-elements/board-element.component';
+import { BoardService } from '../../../shared/services/board.service';
+import { BoardElementComponent } from '../board-element/board-element.component';
+import { type ConcreteSlabComponent } from '../board-element/subsoil/concrete-slab/concrete-slab.component';
+import { type GrassComponent } from '../board-element/subsoil/grass/grass.component';
+
+type DynamicComponent = typeof GrassComponent | typeof ConcreteSlabComponent;
+
+export const dynamicComponents = {
+  grass: () =>
+    import('../board-element/subsoil/grass/grass.component').then(
+      (m) => m.GrassComponent,
+    ),
+  concreteSlab: () =>
+    import(
+      '../board-element/subsoil/concrete-slab/concrete-slab.component'
+    ).then((m) => m.ConcreteSlabComponent),
+} satisfies Record<BoardElementDTO['type'], () => Promise<DynamicComponent>>;
 
 @Component({
   selector: 'app-board',
@@ -25,24 +40,37 @@ import { BoardElementComponent } from './board-elements/board-element.component'
 export class BoardComponent implements AfterViewInit {
   readonly boardElementsService = inject(BoardElementsService);
   readonly boardService = inject(BoardService);
-
-  readonly aspectRatio = computed<number>(() => {
-    const { width, height } = this.boardService.size();
-
-    return width / height;
-  });
-
   readonly boardStyle = signal<Partial<CSSStyleDeclaration>>({});
+  readonly dynamicComponents = signal<
+    Partial<Record<BoardElementDTO['type'], DynamicComponent>>
+  >({});
 
   @ViewChild('boardContainer', { static: true })
-  boardContainer!: ElementRef<HTMLDivElement>;
+  boardContainer?: ElementRef<HTMLDivElement>;
 
   @ViewChild('board', { static: true })
-  board!: ElementRef<HTMLDivElement>;
+  board?: ElementRef<HTMLDivElement>;
 
   @HostListener('window:resize', ['$event'])
   onResize() {
     this.setBoardStyle();
+  }
+
+  constructor() {
+    effect(() => {
+      const boardElements = this.boardElementsService.elements();
+
+      boardElements.forEach(async ({ type }) => {
+        if (this.dynamicComponents()[type]) return;
+
+        const component = await dynamicComponents[type]();
+
+        this.dynamicComponents.update((dynamicComponents) => ({
+          ...dynamicComponents,
+          [type]: component,
+        }));
+      });
+    });
   }
 
   ngAfterViewInit() {
@@ -50,9 +78,11 @@ export class BoardComponent implements AfterViewInit {
   }
 
   getElementStyle(
-    options: BoardElement['options'],
+    options: BoardElementDTO['options'],
   ): Partial<CSSStyleDeclaration> {
     const { width: realWidth, height: realHeight } = this.boardService.size();
+
+    if (!this.board) throw new Error('Board element not found');
 
     const { offsetWidth: boardWidth, offsetHeight: boardHeight } =
       this.board.nativeElement;
@@ -67,8 +97,12 @@ export class BoardComponent implements AfterViewInit {
   }
 
   private setBoardStyle() {
+    if (!this.board) throw new Error('Board element not found');
+
     const { offsetWidth: boardWidth, offsetHeight: boardHeight } =
       this.board.nativeElement;
+
+    if (!this.boardContainer) throw new Error('Board element not found');
 
     const { offsetWidth: containerWidth, offsetHeight: containerHeight } =
       this.boardContainer.nativeElement;

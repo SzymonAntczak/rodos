@@ -7,9 +7,9 @@ export enum CollectionName {
   BoardElements = 'rodos.boardElements',
 }
 
-export interface DTO {
+export type DTO = {
   id: string;
-}
+};
 
 @Injectable({
   providedIn: 'root',

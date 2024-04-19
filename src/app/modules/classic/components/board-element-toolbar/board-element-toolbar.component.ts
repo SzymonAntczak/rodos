@@ -4,7 +4,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { BoardElementsService } from '../../../shared/services/board-elements.service';
-import { BoardService } from '../../services/board.service';
+import { BoardService } from '../../../shared/services/board.service';
 
 @Component({
   selector: 'app-board-element-toolbar',

@@ -5,7 +5,7 @@ import { MatMenuModule } from '@angular/material/menu';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import {
   BoardElementsService,
-  type boardComponents,
+  type BoardElementDTO,
 } from '../../../shared/services/board-elements.service';
 
 interface MenuItem {
@@ -13,7 +13,7 @@ interface MenuItem {
   icon: string;
   boardElements: {
     label: string;
-    componentType: keyof typeof boardComponents;
+    componentType: BoardElementDTO['type'];
   }[];
 }
 
