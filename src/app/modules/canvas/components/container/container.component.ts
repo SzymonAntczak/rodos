@@ -7,6 +7,7 @@ import {
   type ElementRef,
 } from '@angular/core';
 import * as THREE from 'three';
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import { BoardComponent } from '../../../shared/components/board/board.component';
 import { BoardService } from './../../../shared/services/board.service';
 
@@ -19,21 +20,7 @@ import { BoardService } from './../../../shared/services/board.service';
 export class ContainerComponent {
   private readonly boardService = inject(BoardService);
 
-  private scene?: THREE.Scene;
-  private readonly material = new THREE.MeshToonMaterial();
-  private readonly ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
-  private readonly pointLight = new THREE.PointLight(0xffffff, 0.5);
-  private readonly box = new THREE.Mesh(
-    new THREE.BoxGeometry(1.5, 1.5, 1.5),
-    this.material,
-  );
-  private readonly torus = new THREE.Mesh(
-    new THREE.TorusGeometry(5, 1.5, 16, 100),
-    this.material,
-  );
-  private readonly clock = new THREE.Clock();
-
-  private canvasSize?: { width: number; height: number };
+  private scene = new THREE.Scene();
   private camera?: THREE.PerspectiveCamera;
   private renderer?: THREE.WebGLRenderer;
 
@@ -53,87 +40,105 @@ export class ContainerComponent {
 
       if (!width || !height) return;
 
-      if (!this.scene) {
+      if (!this.renderer) {
         this.scene = new THREE.Scene();
 
-        this.initScene(this.scene, width, height);
+        this.initScene(width, height);
         return;
       }
 
-      this.updateSceneSize(this.scene, width, height);
+      this.updateSceneSize(width, height);
     });
   }
 
-  initScene(scene: THREE.Scene, width: number, height: number) {
-    this.canvasSize = { width, height };
-
-    this.camera = new THREE.PerspectiveCamera(
-      75,
-      this.canvasSize.width / this.canvasSize.height,
-      0.001,
-      1000,
-    );
-
+  initScene(width: number, height: number) {
     if (!this.canvas) throw new Error('Canvas not found');
 
     this.renderer = new THREE.WebGLRenderer({
       canvas: this.canvas.nativeElement,
     });
+    this.renderer.setSize(width, height);
 
-    scene.add(this.ambientLight);
+    this.camera = new THREE.PerspectiveCamera(75, width / height, 0.001, 1000);
+    const orbit = new OrbitControls(this.camera, this.renderer.domElement);
 
-    this.pointLight.position.x = 2;
-    this.pointLight.position.y = 2;
-    this.pointLight.position.z = 2;
+    this.camera.position.set(1, 2, 5);
+    orbit.update();
 
-    scene.add(this.pointLight);
-    scene.add(this.torus, this.box);
-
-    this.camera.position.z = 30;
-    scene.add(this.camera);
-
-    this.renderer.setClearColor(0xe232222, 1);
-    this.renderer.setSize(this.canvasSize.width, this.canvasSize.height);
+    this.addHelpers();
+    const box = this.addBox();
+    this.addSphere();
+    this.addPlane();
 
     const animate = () => {
-      const elapsedTime = this.clock.getElapsedTime();
+      if (!this.renderer || !this.camera) return;
 
-      this.box.rotation.x = elapsedTime;
-      this.box.rotation.y = elapsedTime;
-      this.box.rotation.z = elapsedTime;
+      box.rotation.x += 0.01;
+      box.rotation.y += 0.01;
 
-      this.torus.rotation.x = -elapsedTime;
-      this.torus.rotation.y = -elapsedTime;
-      this.torus.rotation.z = -elapsedTime;
-
-      if (!this.camera || !this.renderer) return;
-
-      this.renderer.render(scene, this.camera);
-
-      window.requestAnimationFrame(animate);
+      this.renderer.render(this.scene, this.camera);
     };
 
-    animate();
+    this.renderer.setAnimationLoop(animate);
   }
 
-  private updateSceneSize(
-    scene: THREE.Scene,
-    width: number,
-    height: number,
-  ): void {
-    if (!this.canvasSize || !width || !height) return;
+  private addHelpers(): void {
+    const axesHelper = new THREE.AxesHelper(3);
+    this.scene.add(axesHelper);
 
-    this.canvasSize.width = width;
-    this.canvasSize.height = height;
+    const gridHelper = new THREE.GridHelper(10, 10);
+    this.scene.add(gridHelper);
+  }
 
+  private addBox(): THREE.Mesh {
+    const boxGeometry = new THREE.BoxGeometry();
+    const boxMaterial = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
+    const box = new THREE.Mesh(boxGeometry, boxMaterial);
+
+    this.scene.add(box);
+
+    return box;
+  }
+
+  private addPlane(): THREE.Mesh {
+    const planeGeometry = new THREE.PlaneGeometry(10, 10);
+    const planeMaterial = new THREE.MeshBasicMaterial({
+      color: 0xffffff,
+      side: THREE.DoubleSide,
+    });
+    const plane = new THREE.Mesh(planeGeometry, planeMaterial);
+
+    plane.rotation.x = Math.PI / 2;
+
+    this.scene.add(plane);
+
+    return plane;
+  }
+
+  private addSphere(): THREE.Mesh {
+    const sphereGeometry = new THREE.SphereGeometry(1, 50, 50);
+    const sphereMaterial = new THREE.MeshLambertMaterial({
+      color: 0xffffff,
+      wireframe: false,
+    });
+    const sphere = new THREE.Mesh(sphereGeometry, sphereMaterial);
+
+    sphere.position.set(0, 2, 0);
+
+    this.scene.add(sphere);
+
+    return sphere;
+  }
+
+  private updateSceneSize(width: number, height: number): void {
     if (!this.camera) return;
 
-    this.camera.aspect = this.canvasSize.width / this.canvasSize.height;
+    this.camera.aspect = width / height;
     this.camera.updateProjectionMatrix();
 
     if (!this.renderer) return;
 
-    this.renderer.setSize(this.canvasSize.width, this.canvasSize.height);
-    this.renderer.render(scene, this.camera);
+    this.renderer.setSize(width, height);
+    this.renderer.render(this.scene, this.camera);
   }
 }
