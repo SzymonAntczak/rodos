@@ -7,7 +7,7 @@ import {
   inject,
   signal,
   type AfterViewInit,
-  type ElementRef
+  type ElementRef,
 } from '@angular/core';
 import {
   BoardElementsService,
@@ -46,10 +46,10 @@ export class BoardComponent implements AfterViewInit {
   >({});
 
   @ViewChild('boardContainer', { static: true })
-  boardContainer?: ElementRef<HTMLDivElement>;
+  private readonly boardContainer?: ElementRef<HTMLDivElement>;
 
   @ViewChild('board', { static: true })
-  board?: ElementRef<HTMLDivElement>;
+  private readonly board?: ElementRef<HTMLDivElement>;
 
   @HostListener('window:resize', ['$event'])
   onResize() {
@@ -92,11 +92,11 @@ export class BoardComponent implements AfterViewInit {
       bottom: `${(options.yPosition * boardHeight) / realHeight}px`,
       width: `${(options.width * boardWidth) / realWidth}px`,
       height: `${(options.height * boardHeight) / realHeight}px`,
-      zIndex: options.layer.toString(),
+      zIndex: `${options.layer}`,
     };
   }
 
-  private setBoardStyle() {
+  private setBoardStyle(): void {
     if (!this.board) throw new Error('Board element not found');
 
     const { offsetWidth: boardWidth, offsetHeight: boardHeight } =

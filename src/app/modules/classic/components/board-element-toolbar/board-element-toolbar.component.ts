@@ -20,7 +20,7 @@ export class BoardElementToolbarComponent {
     this.boardElementsService.elements().find((element) => element.isActive),
   );
 
-  onChange(event: Event) {
+  onChange(event: Event): void {
     const activeElement = this.activeElement();
 
     if (!activeElement) return;
