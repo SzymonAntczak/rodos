@@ -1,5 +1,5 @@
-<aside class="h-full">
-  <mat-toolbar color="primary" class="h-full rounded-md shadow-sm shadow-black">
+<aside class="flex h-full flex-col">
+  <mat-toolbar color="primary" class="flex-1 rounded-md shadow-sm shadow-black">
     <mat-toolbar-row class="mb-5 justify-center">
       <h1 class="text-center !text-lg font-medium uppercase text-white">
         {{ title }}
@@ -27,4 +27,16 @@
       </mat-toolbar-row>
     }
   </mat-toolbar>
+
+  <div class="mt-2 text-center">
+    @for (
+      item of [
+        { routerLink: ["/"], label: "Classic" },
+        { routerLink: ["/canvas"], label: "Canvas" }
+      ];
+      track item.label
+    ) {
+      <a [routerLink]="item.routerLink" class="my-1 block">{{ item.label }}</a>
+    }
+  </div>
 </aside>

@@ -3,6 +3,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatToolbarModule } from '@angular/material/toolbar';
+import { RouterModule } from '@angular/router';
 import {
   BoardElementsService,
   type BoardElementDTO,
@@ -21,7 +22,13 @@ interface MenuItem {
   selector: 'app-toolbar',
   standalone: true,
   templateUrl: './toolbar.component.html',
-  imports: [MatToolbarModule, MatButtonModule, MatMenuModule, MatIconModule],
+  imports: [
+    MatToolbarModule,
+    MatButtonModule,
+    MatMenuModule,
+    MatIconModule,
+    RouterModule,
+  ],
 })
 export class ToolbarComponent {
   readonly title = 'Rodos';
