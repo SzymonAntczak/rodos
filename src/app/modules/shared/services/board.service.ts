@@ -1,8 +1,10 @@
 import { Injectable, computed, signal } from '@angular/core';
 
 export type BoardSize = {
-  width: number;
-  height: number;
+  realWidth: number;
+  realHeight: number;
+  width?: number;
+  height?: number;
 };
 
 @Injectable({
@@ -10,12 +12,12 @@ export type BoardSize = {
 })
 export class BoardService {
   readonly size = signal<BoardSize>({
-    width: 17.5,
-    height: 17,
+    realWidth: 17.5,
+    realHeight: 17,
   });
 
   readonly aspectRatio = computed<number>(() => {
-    const { width, height } = this.size();
-    return width / height;
+    const { realWidth, realHeight } = this.size();
+    return realWidth / realHeight;
   });
 }

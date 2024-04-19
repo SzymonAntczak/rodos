@@ -1,4 +1,4 @@
-import { Component, Input, inject } from '@angular/core';
+import { Component, HostBinding, Input, inject } from '@angular/core';
 import {
   BoardElementsService,
   type BoardElementDTO,
@@ -13,5 +13,11 @@ export class BoardElementComponent {
   readonly boardElementsService = inject(BoardElementsService);
 
   @Input({ required: true }) id!: BoardElementDTO['id'];
-  @Input({ required: true }) options!: BoardElementDTO['options'];
+
+  @Input({ required: true }) set isActive(isActive: boolean | undefined) {
+    this.outline = isActive ? 'auto' : 'none';
+  }
+
+  @HostBinding('style.outline')
+  outline: CSSStyleDeclaration['outline'] = 'none';
 }

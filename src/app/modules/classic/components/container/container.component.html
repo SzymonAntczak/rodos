@@ -1,4 +1,18 @@
 <div class="grid h-full grid-cols-[1fr_20rem] gap-3">
-  <app-board />
+  <app-board>
+    @for (element of boardElementsService.elements(); track element.id) {
+      <app-board-element
+        [id]="element.id"
+        [isActive]="element.isActive"
+        [style]="getBoardElementPosition(element.options)"
+        class="absolute inline-block transition-all"
+      >
+        @if (dynamicComponents()[element.type]; as component) {
+          <ng-container *ngComponentOutlet="component" />
+        }
+      </app-board-element>
+    }
+  </app-board>
+
   <app-board-element-toolbar />
 </div>
