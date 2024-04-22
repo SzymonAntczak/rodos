@@ -1,0 +1,8 @@
+<button
+  class="size-full"
+  (click)="boardElementsService.toggleActiveElement(boardElement.id)"
+>
+  @if (dynamicComponent(); as component) {
+    <ng-container *ngComponentOutlet="component" />
+  }
+</button>

@@ -7,7 +7,7 @@ import { RouterModule } from '@angular/router';
 import {
   BoardElementsService,
   type BoardElementDTO,
-} from '../../../shared/services/board-elements.service';
+} from '../../services/board-elements.service';
 
 interface MenuItem {
   category: 'subsoil';

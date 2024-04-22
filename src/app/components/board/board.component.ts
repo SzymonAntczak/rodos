@@ -7,16 +7,22 @@ import {
   type AfterViewInit,
   type ElementRef,
 } from '@angular/core';
+import {
+  BoardElementsService,
+  type BoardElementDTO,
+} from '../../services/board-elements.service';
 import { BoardService } from '../../services/board.service';
+import { BoardElementComponent } from '../board-element/board-element.component';
 
 @Component({
   selector: 'app-board',
   standalone: true,
-  imports: [],
   templateUrl: './board.component.html',
+  imports: [BoardElementComponent],
 })
 export class BoardComponent implements AfterViewInit {
   readonly boardService = inject(BoardService);
+  readonly boardElementsService = inject(BoardElementsService);
   readonly boardStyle = signal<Partial<CSSStyleDeclaration>>({});
 
   @ViewChild('boardContainer', { static: true })
@@ -36,6 +42,22 @@ export class BoardComponent implements AfterViewInit {
     this.setBoardStyle().then(() => {
       this.updateBoardSize();
     });
+  }
+
+  getBoardElementPosition(
+    options: BoardElementDTO['options'],
+  ): Partial<CSSStyleDeclaration> | undefined {
+    const { realWidth, realHeight, width, height } = this.boardService.size();
+
+    if (!width || !height) return;
+
+    return {
+      left: `${(options.xPosition * width) / realWidth}px`,
+      bottom: `${(options.yPosition * height) / realHeight}px`,
+      width: `${(options.width * width) / realWidth}px`,
+      height: `${(options.height * height) / realHeight}px`,
+      zIndex: `${options.layer}`,
+    };
   }
 
   private setBoardStyle(): Promise<void> {

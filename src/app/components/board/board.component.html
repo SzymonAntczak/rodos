@@ -12,7 +12,14 @@
       {{ boardService.size().realHeight }}m
     </span>
 
-    <ng-content />
+    @for (element of boardElementsService.elements(); track element.id) {
+      <app-board-element
+        [boardElement]="element"
+        [isActive]="element.isActive"
+        [style]="getBoardElementPosition(element.options)"
+        class="absolute inline-block transition-all"
+      />
+    }
 
     <span class="absolute -bottom-6 left-1/2 -translate-x-1/2">
       {{ boardService.size().realWidth }}m
