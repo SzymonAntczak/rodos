@@ -72,13 +72,15 @@ export class BoardComponent implements AfterViewInit {
       const { offsetWidth: containerWidth, offsetHeight: containerHeight } =
         this.boardContainer.nativeElement;
 
-      if (boardWidth > containerWidth) {
+      const padding = 24;
+
+      if (boardWidth + padding >= containerWidth) {
         this.boardStyle.set({
           width: '100%',
         });
       }
 
-      if (boardHeight > containerHeight) {
+      if (boardHeight + padding > containerHeight) {
         this.boardStyle.set({
           height: '100%',
         });
