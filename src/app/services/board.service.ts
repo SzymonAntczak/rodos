@@ -1,23 +1,44 @@
-import { Injectable, computed, signal } from '@angular/core';
+import { Injectable, inject, signal } from '@angular/core';
+import { take } from 'rxjs';
+import { CollectionName, StorageService, type DTO } from './storage.service';
 
-export type BoardSize = {
+export type BoardDTO = DTO & {
   realWidth: number;
   realHeight: number;
-  width?: number;
-  height?: number;
 };
 
 @Injectable({
   providedIn: 'root',
 })
 export class BoardService {
-  readonly size = signal<BoardSize>({
-    realWidth: 17.5,
-    realHeight: 17,
-  });
+  readonly board = signal<BoardDTO | null>(null);
 
-  readonly aspectRatio = computed<number>(() => {
-    const { realWidth, realHeight } = this.size();
-    return realWidth / realHeight;
-  });
+  private readonly storageService = inject(StorageService);
+
+  constructor() {
+    this.storageService
+      .getItems<BoardDTO>(CollectionName.Boards)
+      .pipe(take(1))
+      .subscribe((boardDTO) => {
+        this.board.set(boardDTO[0]);
+      });
+  }
+
+  createBoard(board: Omit<BoardDTO, 'id'>) {
+    this.storageService
+      .createItem<BoardDTO>(CollectionName.Boards, board)
+      .pipe(take(1))
+      .subscribe((boardDTO) => {
+        this.board.set(boardDTO);
+      });
+  }
+
+  updateBoard(id: BoardDTO['id'], body: Omit<BoardDTO, 'id'>): void {
+    this.storageService
+      .updateItem<BoardDTO>(CollectionName.Boards, id, body)
+      .pipe(take(1))
+      .subscribe((boardDTO) => {
+        this.board.set(boardDTO);
+      });
+  }
 }

@@ -5,6 +5,7 @@ import uniqid from 'uniqid';
 
 export enum CollectionName {
   BoardElements = 'rodos.boardElements',
+  Boards = 'rodos.boards',
 }
 
 export type DTO = {

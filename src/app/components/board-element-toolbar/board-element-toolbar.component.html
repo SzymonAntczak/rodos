@@ -1,7 +1,7 @@
 <aside class="h-full">
   <mat-toolbar
     color="primary"
-    class="!h-full gap-y-2 rounded-md shadow-sm shadow-black"
+    class="relative !h-full gap-y-2 rounded-md pb-40 shadow-sm shadow-black"
   >
     @if (activeElement(); as activeElement) {
       <ng-container>
@@ -17,7 +17,7 @@
                 label: 'Odległość od lewej krawędzi obszaru',
                 name: 'xPosition',
                 value: activeElement.options.xPosition,
-                max: boardService.size().width
+                max: boardService.board()?.realWidth
               }
             }
           "
@@ -31,7 +31,7 @@
                 label: 'Odległość od dolnej krawędzi obszaru',
                 name: 'yPosition',
                 value: activeElement.options.yPosition,
-                max: boardService.size().height
+                max: boardService.board()?.realHeight
               }
             }
           "
@@ -45,7 +45,7 @@
                 label: 'Szerokość',
                 name: 'width',
                 value: activeElement.options.width,
-                max: boardService.size().width
+                max: boardService.board()?.realWidth
               }
             }
           "
@@ -59,7 +59,7 @@
                 label: 'Wysokość',
                 name: 'height',
                 value: activeElement.options.height,
-                max: boardService.size().height
+                max: boardService.board()?.realHeight
               }
             }
           "
@@ -81,6 +81,43 @@
         />
       </ng-container>
     }
+
+    <form
+      class="absolute bottom-0 left-0 w-full p-4"
+      (submit)="onBoardSizeFormSubmit($event)"
+    >
+      <fieldset class="grid grid-cols-2 gap-x-2">
+        <legend class="mb-1 text-sm">Wymiary działki:</legend>
+
+        <mat-form-field>
+          <mat-label>Szerorkość</mat-label>
+          <input
+            matInput
+            type="number"
+            min="0"
+            name="realWidth"
+            step="0.1"
+            [value]="boardService.board()?.realWidth ?? 0"
+          />
+        </mat-form-field>
+
+        <mat-form-field>
+          <mat-label>Długość</mat-label>
+          <input
+            matInput
+            type="number"
+            min="0"
+            name="realHeight"
+            step="0.1"
+            [value]="boardService.board()?.realHeight ?? 0"
+          />
+        </mat-form-field>
+      </fieldset>
+
+      <button mat-flat-button color="accent" class="ml-auto w-full">
+        Zapisz
+      </button>
+    </form>
   </mat-toolbar>
 </aside>
 

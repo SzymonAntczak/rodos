@@ -1,18 +1,21 @@
 import {
   Component,
-  HostListener,
+  Input,
   ViewChild,
+  computed,
   inject,
   signal,
   type AfterViewInit,
   type ElementRef,
+  type OnChanges,
+  type SimpleChanges,
 } from '@angular/core';
 import {
   BoardElementsService,
   type BoardElementDTO,
 } from '../../services/board-elements.service';
-import { BoardService } from '../../services/board.service';
 import { BoardElementComponent } from '../board-element/board-element.component';
+import { BoardService, type BoardDTO } from './../../services/board.service';
 
 @Component({
   selector: 'app-board',
@@ -20,36 +23,45 @@ import { BoardElementComponent } from '../board-element/board-element.component'
   templateUrl: './board.component.html',
   imports: [BoardElementComponent],
 })
-export class BoardComponent implements AfterViewInit {
+export class BoardComponent implements OnChanges, AfterViewInit {
+  @Input({ required: true }) containerSize!: { width: number; height: number };
+
   readonly boardService = inject(BoardService);
+
+  readonly aspectRatio = computed<number>(() => {
+    const board = this.boardService.board();
+
+    if (!board) return 1;
+
+    return board.realWidth / board.realHeight;
+  });
+
   readonly boardElementsService = inject(BoardElementsService);
   readonly boardStyle = signal<Partial<CSSStyleDeclaration>>({});
-
-  @ViewChild('boardContainer', { static: true })
-  private readonly boardContainer?: ElementRef<HTMLDivElement>;
 
   @ViewChild('board', { static: true })
   private readonly board?: ElementRef<HTMLDivElement>;
 
-  @HostListener('window:resize', ['$event'])
-  onResize() {
-    this.setBoardStyle().then(() => {
-      this.updateBoardSize();
-    });
+  ngOnChanges(changes: SimpleChanges) {
+    const containerSize = changes['containerSize'];
+
+    if (!containerSize || containerSize.isFirstChange()) return;
+
+    this.setBoardStyle();
   }
 
   ngAfterViewInit() {
-    this.setBoardStyle().then(() => {
-      this.updateBoardSize();
-    });
+    this.setBoardStyle();
   }
 
   getBoardElementPosition(
     options: BoardElementDTO['options'],
+    { realWidth, realHeight }: BoardDTO,
   ): Partial<CSSStyleDeclaration> | undefined {
-    const { realWidth, realHeight, width, height } = this.boardService.size();
+    if (!this.board) throw new Error('Board element not found');
 
-    if (!width || !height) return;
+    const { offsetWidth: width, offsetHeight: height } =
+      this.board.nativeElement;
 
     return {
       left: `${(options.xPosition * width) / realWidth}px`,
@@ -60,46 +72,24 @@ export class BoardComponent implements AfterViewInit {
     };
   }
 
-  private setBoardStyle(): Promise<void> {
-    return new Promise((resolve) => {
-      if (!this.board) throw new Error('Board element not found');
-
-      const { offsetWidth: boardWidth, offsetHeight: boardHeight } =
-        this.board.nativeElement;
-
-      if (!this.boardContainer) throw new Error('Board element not found');
-
-      const { offsetWidth: containerWidth, offsetHeight: containerHeight } =
-        this.boardContainer.nativeElement;
-
-      const padding = 24;
-
-      if (boardWidth + padding >= containerWidth) {
-        this.boardStyle.set({
-          width: '100%',
-        });
-      }
-
-      if (boardHeight + padding > containerHeight) {
-        this.boardStyle.set({
-          height: '100%',
-        });
-      }
-
-      resolve();
-    });
-  }
-
-  private updateBoardSize() {
+  private setBoardStyle(): void {
     if (!this.board) throw new Error('Board element not found');
 
     const { offsetWidth: boardWidth, offsetHeight: boardHeight } =
       this.board.nativeElement;
 
-    this.boardService.size.update((size) => ({
-      ...size,
-      width: boardWidth,
-      height: boardHeight,
-    }));
+    const padding = 24;
+
+    if (boardWidth + padding >= this.containerSize.width) {
+      this.boardStyle.set({
+        width: '100%',
+      });
+    }
+
+    if (boardHeight + padding > this.containerSize.height) {
+      this.boardStyle.set({
+        height: '100%',
+      });
+    }
   }
 }
