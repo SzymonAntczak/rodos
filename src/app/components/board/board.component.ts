@@ -55,17 +55,38 @@ export class BoardComponent implements OnChanges, AfterViewInit {
   }
 
   getBoardElementPosition(
-    options: BoardElementDTO['options'],
+    element: BoardElementDTO,
     { realWidth, realHeight }: BoardDTO,
   ): Partial<CSSStyleDeclaration> | undefined {
     if (!this.board) throw new Error('Board element not found');
+
+    const activeElement = this.boardElementsService.activeElement();
+
+    const options =
+      activeElement && activeElement.id === element.id
+        ? activeElement.options
+        : element.options;
 
     const { offsetWidth: width, offsetHeight: height } =
       this.board.nativeElement;
 
     return {
-      left: `${(options.xPosition * width) / realWidth}px`,
-      bottom: `${(options.yPosition * height) / realHeight}px`,
+      left:
+        typeof options.left === 'number'
+          ? `${(options.left * width) / realWidth}px`
+          : 'unset',
+      right:
+        typeof options.right === 'number'
+          ? `${(options.right * width) / realWidth}px`
+          : 'unset',
+      top:
+        typeof options.top === 'number'
+          ? `${(options.top * height) / realHeight}px`
+          : 'unset',
+      bottom:
+        typeof options.bottom === 'number'
+          ? `${(options.bottom * height) / realHeight}px`
+          : 'unset',
       width: `${(options.width * width) / realWidth}px`,
       height: `${(options.height * height) / realHeight}px`,
       zIndex: `${options.layer}`,

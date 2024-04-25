@@ -3,6 +3,7 @@ import {
   Component,
   HostBinding,
   Input,
+  effect,
   inject,
   signal,
   type OnInit,
@@ -33,15 +34,21 @@ export const dynamicComponents = {
 })
 export class BoardElementComponent implements OnInit {
   @Input({ required: true }) boardElement!: BoardElementDTO;
-  @Input({ required: true }) set isActive(isActive: boolean | undefined) {
-    this.outline = isActive ? 'auto' : 'none';
-  }
 
   readonly dynamicComponent = signal<DynamicComponent | null>(null);
   readonly boardElementsService = inject(BoardElementsService);
 
   @HostBinding('style.outline')
   outline: CSSStyleDeclaration['outline'] = 'none';
+
+  constructor() {
+    effect(() => {
+      const activeElement = this.boardElementsService.activeElement();
+
+      this.outline =
+        activeElement?.id === this.boardElement.id ? 'auto' : 'none';
+    });
+  }
 
   ngOnInit() {
     dynamicComponents[this.boardElement.type]().then((component) => {

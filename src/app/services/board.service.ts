@@ -11,8 +11,11 @@ export type BoardDTO = DTO & {
   providedIn: 'root',
 })
 export class BoardService {
-  readonly board = signal<BoardDTO | null>(null);
+  get board() {
+    return this._board.asReadonly();
+  }
 
+  private readonly _board = signal<BoardDTO | null>(null);
   private readonly storageService = inject(StorageService);
 
   constructor() {
@@ -20,7 +23,7 @@ export class BoardService {
       .getItems<BoardDTO>(CollectionName.Boards)
       .pipe(take(1))
       .subscribe((boardDTO) => {
-        this.board.set(boardDTO[0]);
+        this._board.set(boardDTO[0]);
       });
   }
 
@@ -29,7 +32,7 @@ export class BoardService {
       .createItem<BoardDTO>(CollectionName.Boards, board)
       .pipe(take(1))
       .subscribe((boardDTO) => {
-        this.board.set(boardDTO);
+        this._board.set(boardDTO);
       });
   }
 
@@ -38,7 +41,7 @@ export class BoardService {
       .updateItem<BoardDTO>(CollectionName.Boards, id, body)
       .pipe(take(1))
       .subscribe((boardDTO) => {
-        this.board.set(boardDTO);
+        this._board.set(boardDTO);
       });
   }
 }

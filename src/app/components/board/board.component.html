@@ -12,8 +12,7 @@
     @for (element of boardElementsService.elements(); track element.id) {
       <app-board-element
         [boardElement]="element"
-        [isActive]="element.isActive"
-        [style]="getBoardElementPosition(element.options, board)"
+        [style]="getBoardElementPosition(element, board)"
         class="absolute inline-block transition-all"
       />
     }

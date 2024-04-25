@@ -1,84 +1,45 @@
 <aside class="h-full">
   <mat-toolbar
     color="primary"
-    class="relative !h-full gap-y-2 rounded-md pb-40 shadow-sm shadow-black"
+    class="relative !h-full !flex-col rounded-md pb-40 shadow-sm shadow-black"
   >
-    @if (activeElement(); as activeElement) {
+    @if (this.boardElementsService.activeElement(); as activeElement) {
       <ng-container>
-        <mat-toolbar-row>
-          <h2>{{ activeElement.type }}</h2>
-        </mat-toolbar-row>
+        <h2 class="!my-2">{{ activeElement.type }} - {{ activeElement.id }}</h2>
 
         <ng-container
-          *ngTemplateOutlet="
-            inputRow;
-            context: {
-              $implicit: {
-                label: 'Odległość od lewej krawędzi obszaru',
-                name: 'xPosition',
-                value: activeElement.options.xPosition,
-                max: boardService.board()?.realWidth
-              }
-            }
-          "
+          *ngTemplateOutlet="form; context: { $implicit: positionForm() }"
         />
 
         <ng-container
-          *ngTemplateOutlet="
-            inputRow;
-            context: {
-              $implicit: {
-                label: 'Odległość od dolnej krawędzi obszaru',
-                name: 'yPosition',
-                value: activeElement.options.yPosition,
-                max: boardService.board()?.realHeight
-              }
-            }
-          "
+          *ngTemplateOutlet="form; context: { $implicit: sizeForm() }"
         />
 
         <ng-container
-          *ngTemplateOutlet="
-            inputRow;
-            context: {
-              $implicit: {
-                label: 'Szerokość',
-                name: 'width',
-                value: activeElement.options.width,
-                max: boardService.board()?.realWidth
-              }
-            }
-          "
+          *ngTemplateOutlet="form; context: { $implicit: layerForm() }"
         />
 
-        <ng-container
-          *ngTemplateOutlet="
-            inputRow;
-            context: {
-              $implicit: {
-                label: 'Wysokość',
-                name: 'height',
-                value: activeElement.options.height,
-                max: boardService.board()?.realHeight
-              }
-            }
-          "
-        />
+        <button
+          mat-flat-button
+          class="mb-2 w-full"
+          (click)="boardElementsService.saveElement(activeElement)"
+        >
+          Zapisz
+        </button>
 
-        <ng-container
-          *ngTemplateOutlet="
-            inputRow;
-            context: {
-              $implicit: {
-                label: 'Warstwa',
-                name: 'layer',
-                value: activeElement.options.layer,
-                max: 10,
-                step: '1'
-              }
-            }
+        <button
+          mat-button
+          color="accent"
+          class="w-full"
+          (click)="
+            boardElementsService.addElement(
+              activeElement.type,
+              activeElement.options
+            )
           "
-        />
+        >
+          Kopiuj
+        </button>
       </ng-container>
     }
 
@@ -114,30 +75,32 @@
         </mat-form-field>
       </fieldset>
 
-      <button mat-flat-button color="accent" class="ml-auto w-full">
-        Zapisz
-      </button>
+      <button mat-flat-button color="accent" class="w-full">Zapisz</button>
     </form>
   </mat-toolbar>
 </aside>
 
-<ng-template #inputRow let-input>
-  <mat-toolbar-row class="!h-auto">
-    <mat-form-field class="w-full">
-      <mat-label>{{ input.label }}</mat-label>
+<ng-template #form let-form>
+  <form>
+    <fieldset class="grid grid-cols-2 gap-x-2">
+      <legend class="mb-1 text-sm">{{ form.description }}:</legend>
 
-      <input
-        matInput
-        type="number"
-        min="0"
-        [name]="input.name"
-        [value]="input.value"
-        [max]="input.max"
-        [step]="input.step ?? '0.1'"
-        (change)="onChange($event)"
-      />
+      @for (input of form.inputs; track input.name) {
+        <mat-form-field>
+          <mat-label>{{ input.label }}</mat-label>
 
-      <mat-hint align="start">{{ input.hint ?? "W metrach" }}</mat-hint>
-    </mat-form-field>
-  </mat-toolbar-row>
+          <input
+            matInput
+            type="number"
+            min="0"
+            [name]="input.name"
+            [value]="input.value"
+            [max]="input.max"
+            [step]="input.step ?? '0.1'"
+            (input)="onElementOptionChange($event)"
+          />
+        </mat-form-field>
+      }
+    </fieldset>
+  </form>
 </ng-template>

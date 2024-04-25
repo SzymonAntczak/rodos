@@ -26,9 +26,15 @@ export class StorageService {
   getItem<T extends DTO>(
     collectionName: CollectionName,
     id: DTO['id'],
-  ): Observable<T | undefined> {
+  ): Observable<T> {
     return this.getItems<T>(collectionName).pipe(
-      map((collection) => collection.find((item) => item.id === id)),
+      map((collection) => {
+        const item = collection.find((item) => item.id === id);
+
+        if (!item) throw new Error(`Item of an id '${id}' not found`);
+
+        return item;
+      }),
     );
   }
 
@@ -59,18 +65,24 @@ export class StorageService {
   ): Observable<T> {
     return this.getItems<T>(collectionName).pipe(
       map((collection) => {
-        let item = collection.find((item) => item.id === id);
+        let newItem: T | undefined;
 
-        if (!item) throw new Error('Item not found');
+        const newCollection = collection.map((item) => {
+          if (item.id !== id) return item;
 
-        item = {
-          ...item,
-          ...body,
-        };
+          newItem = {
+            ...item,
+            ...body,
+          };
 
-        localStorage.setItem(collectionName, JSON.stringify(collection));
+          return newItem;
+        });
 
-        return item;
+        if (!newItem) throw new Error(`Item of an id '${id}' not found`);
+
+        localStorage.setItem(collectionName, JSON.stringify(newCollection));
+
+        return newItem;
       }),
     );
   }

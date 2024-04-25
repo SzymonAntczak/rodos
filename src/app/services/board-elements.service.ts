@@ -5,8 +5,10 @@ import { CollectionName, StorageService, type DTO } from './storage.service';
 export type BoardElementDTO = DTO & {
   type: 'grass' | 'concreteSlab';
   options: {
-    xPosition: number;
-    yPosition: number;
+    left: number | null;
+    right: number | null;
+    top: number | null;
+    bottom: number | null;
     width: number;
     height: number;
     layer: number;
@@ -17,26 +19,39 @@ export type BoardElementDTO = DTO & {
   providedIn: 'root',
 })
 export class BoardElementsService {
-  readonly elements = signal<(BoardElementDTO & { isActive?: boolean })[]>([]);
+  get elements() {
+    return this._elements.asReadonly();
+  }
 
-  private readonly storageService = inject(StorageService);
+  get activeElement() {
+    return this._activeElement.asReadonly();
+  }
+
+  private readonly _elements = signal<BoardElementDTO[]>([]);
+  private readonly _activeElement = signal<BoardElementDTO | null>(null);
+  private readonly _storageService = inject(StorageService);
 
   constructor() {
-    this.storageService
+    this._storageService
       .getItems<BoardElementDTO>(CollectionName.BoardElements)
       .pipe(take(1))
       .subscribe((boardElementsDTO) => {
-        this.elements.set(boardElementsDTO);
+        this._elements.set(boardElementsDTO);
       });
   }
 
-  addElement(componentType: BoardElementDTO['type']): void {
-    this.storageService
+  addElement(
+    componentType: BoardElementDTO['type'],
+    initialOptions?: BoardElementDTO['options'],
+  ): void {
+    this._storageService
       .createItem<BoardElementDTO>(CollectionName.BoardElements, {
         type: componentType,
-        options: {
-          xPosition: 0,
-          yPosition: 0,
+        options: initialOptions ?? {
+          left: 0,
+          right: null,
+          top: null,
+          bottom: 0,
           width: 1,
           height: 1,
           layer: 0,
@@ -44,32 +59,52 @@ export class BoardElementsService {
       })
       .pipe(take(1))
       .subscribe((boardElementDTO) => {
-        this.elements.update((elements) => [...elements, boardElementDTO]);
+        this._elements.update((elements) => [...elements, boardElementDTO]);
+        this._activeElement.set(boardElementDTO);
       });
   }
 
   toggleActiveElement(id: BoardElementDTO['id']): void {
-    this.elements.update((elements) =>
-      elements.map((element) => {
-        element.isActive = element.id === id ? !element.isActive : false;
-        return element;
-      }),
-    );
+    const element = this._elements().find((element) => element.id === id);
+
+    if (!element) throw new Error('Element not found');
+
+    this._activeElement.update((prevActiveElement) => {
+      if (!prevActiveElement) return element;
+
+      this._elements.update((elements) =>
+        elements.map((element) =>
+          element.id === prevActiveElement.id ? prevActiveElement : element,
+        ),
+      );
+
+      this.saveElement(prevActiveElement);
+
+      return prevActiveElement.id === element.id ? null : element;
+    });
   }
 
-  updateElementOptions(
-    id: BoardElementDTO['id'],
+  updateActiveElementOptions(
     options: Partial<BoardElementDTO['options']>,
   ): void {
-    this.elements.update((elements) =>
-      elements.map((element) => {
-        element.options =
-          element.id === id
-            ? { ...element.options, ...options }
-            : element.options;
+    this._activeElement.update((element) => {
+      if (!element) return element;
 
-        return element;
-      }),
-    );
+      return {
+        ...element,
+        options: { ...element.options, ...options },
+      };
+    });
+  }
+
+  saveElement({ id, options }: BoardElementDTO): void {
+    this._storageService
+      .updateItem<BoardElementDTO>(CollectionName.BoardElements, id, {
+        options,
+      })
+      .pipe(take(1))
+      .subscribe(() => {
+        console.log('Element saved');
+      });
   }
 }
