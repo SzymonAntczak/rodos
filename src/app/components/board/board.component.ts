@@ -40,7 +40,7 @@ export class BoardComponent implements OnChanges, AfterViewInit {
   readonly boardStyle = signal<Partial<CSSStyleDeclaration>>({});
 
   @ViewChild('board', { static: true })
-  private readonly board?: ElementRef<HTMLDivElement>;
+  private readonly _board?: ElementRef<HTMLDivElement>;
 
   ngOnChanges(changes: SimpleChanges) {
     const containerSize = changes['containerSize'];
@@ -58,7 +58,7 @@ export class BoardComponent implements OnChanges, AfterViewInit {
     element: BoardElementDTO,
     { realWidth, realHeight }: BoardDTO,
   ): Partial<CSSStyleDeclaration> | undefined {
-    if (!this.board) throw new Error('Board element not found');
+    if (!this._board) throw new Error('Board element not found');
 
     const activeElement = this.boardElementsService.activeElement();
 
@@ -68,7 +68,7 @@ export class BoardComponent implements OnChanges, AfterViewInit {
         : element.options;
 
     const { offsetWidth: width, offsetHeight: height } =
-      this.board.nativeElement;
+      this._board.nativeElement;
 
     return {
       left:
@@ -94,10 +94,10 @@ export class BoardComponent implements OnChanges, AfterViewInit {
   }
 
   private setBoardStyle(): void {
-    if (!this.board) throw new Error('Board element not found');
+    if (!this._board) throw new Error('Board element not found');
 
     const { offsetWidth: boardWidth, offsetHeight: boardHeight } =
-      this.board.nativeElement;
+      this._board.nativeElement;
 
     const padding = 24;
 

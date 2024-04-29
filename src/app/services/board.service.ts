@@ -16,10 +16,10 @@ export class BoardService {
   }
 
   private readonly _board = signal<BoardDTO | null>(null);
-  private readonly storageService = inject(StorageService);
+  private readonly _storageService = inject(StorageService);
 
   constructor() {
-    this.storageService
+    this._storageService
       .getItems<BoardDTO>(CollectionName.Boards)
       .pipe(take(1))
       .subscribe((boardDTO) => {
@@ -28,7 +28,7 @@ export class BoardService {
   }
 
   createBoard(board: Omit<BoardDTO, 'id'>) {
-    this.storageService
+    this._storageService
       .createItem<BoardDTO>(CollectionName.Boards, board)
       .pipe(take(1))
       .subscribe((boardDTO) => {
@@ -37,7 +37,7 @@ export class BoardService {
   }
 
   updateBoard(id: BoardDTO['id'], body: Omit<BoardDTO, 'id'>): void {
-    this.storageService
+    this._storageService
       .updateItem<BoardDTO>(CollectionName.Boards, id, body)
       .pipe(take(1))
       .subscribe((boardDTO) => {
